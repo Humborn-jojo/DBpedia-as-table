@@ -2,7 +2,9 @@
 
 import os.path as path
 
-import math,re,csv,random,time,json
+import math,re,csv,random,json
+
+from nltk.corpus import wordnet
 
 def bubble_sort(x):
     flag=True
@@ -13,6 +15,24 @@ def bubble_sort(x):
                 x[i],x[i+1]=x[i+1],x[i]
                 flag=True
     return x
+
+def countNULL(x):
+    count=0
+    for item in x:
+        if item=='NULL':
+            count+=1
+    return count/len(x)
+
+def random_noise(text:str):
+    index=random.randint(len(text))
+    ori=text[index]
+    new=chr(random.randint(97, 122))
+    while ori==new:
+        new = chr(random.randint(97, 122))
+    text=[item for item in text]
+    text[index]=new
+    return ''.join(text)
+
 
 class Table:
 
@@ -131,6 +151,16 @@ class MarkedTable(Table):
 
             print('table directory is \'NULL\' !')
 
+    def set_threshold(self,arg:float):
+
+        if arg<=1 and arg>=0:
+
+            self.threshold=arg
+
+        else:
+
+            raise Exception('threshold should be within range(0, 1).')
+
     def del_col(self, index: int):
 
         if index == 0:
@@ -171,6 +201,38 @@ class MarkedTable(Table):
 
                 raise Exception('out of index range')
 
+    def get_col(self,index:int):
+
+        col_data=[]
+
+        col_mark=[]
+
+        try:
+
+            for row in self.table_data:
+
+                col_data.append(row[index])
+
+            for row in self.table_mark:
+
+                col_mark.append(row[index])
+
+        except:
+
+            raise Exception('out of index range')
+
+        return col_data,col_mark
+
+    def get_row(self,index:int):
+
+        try:
+
+            return self.table_data[index],self.table_mark[index]
+
+        except:
+
+            raise Exception('out of index range')
+
     def save_json(self,name):
 
         if not self.table_save_directory=='NULL':
@@ -206,7 +268,31 @@ class MarkedTable(Table):
 
             print('table_save_directory is \'NULL\' !')
 
-    def table_decompose(self, name,row_range=10,col_range=10,generate_num:int=10,row_shuffle:bool=True,col_shuffle:bool=True):
+    def advisor(self):
+
+        count=0
+
+        for i in range(self.col):
+
+            if (1-countNULL(self.get_col(i)[0][1:]))>=self.threshold:
+
+                count+=1
+
+        return count
+
+    def add_noise(self,text:str):
+
+        if random.random()>0.8:
+
+            return random_noise(text)
+
+        else:
+
+            return text
+
+    def table_decompose(self, name,row_range=10,col_range=10,generate_num:int=10,row_shuffle:bool=True,col_shuffle:bool=True,threshold=0.6):
+
+        self.set_threshold(threshold)
 
         try:
 
