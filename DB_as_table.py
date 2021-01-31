@@ -24,6 +24,7 @@ def countNULL(x):
     return count/len(x)
 
 def random_noise(text:str):
+
     index=random.randint(len(text))
     ori=text[index]
     new=chr(random.randint(97, 122))
@@ -34,7 +35,7 @@ def random_noise(text:str):
     return ''.join(text)
 
 
-class Table:
+class myTable:
 
     def __init__(self, table_dir='NULL'):
 
@@ -101,7 +102,7 @@ class Table:
         f.close()
 
 
-class MarkedTable(Table):
+class MarkedTable(myTable):
 
     def __init__(self, table_dir='NULL', table_save_dir='NULL'):
 
@@ -149,7 +150,7 @@ class MarkedTable(Table):
 
         else:
 
-            print('table directory is \'NULL\' !')
+            print('create new table.')
 
     def set_threshold(self,arg:float):
 
@@ -317,7 +318,7 @@ class MarkedTable(Table):
 
             random.shuffle(row_index)
 
-            rand_row=row_index[:row_rand]
+            rand_row=[0]+row_index[:row_rand-1]
 
             if not row_shuffle:
 
@@ -337,7 +338,7 @@ class MarkedTable(Table):
 
             col_rand=random.randint(min_col,min(self.col-1,max_col))
 
-            col_index=[n for n in range(1, self.col)]
+            col_index=[n for n in range(2, self.col)]
 
             random.shuffle(col_index)
 
@@ -345,20 +346,28 @@ class MarkedTable(Table):
 
             if col_shuffle:
 
+                new_row=[]
+
                 for row in generated_table.table_data:
 
-                    row =[row[0]]+[row[n] for n in rand_col]
+                    new_row.append([row[0]]+[row[n] for n in rand_col])
+
+                generated_table.table_data=new_row
+
+                new_row=[]
 
                 for row in generated_table.table_mark:
 
-                    row=[row[0]]+[row[n] for n in rand_col]
+                    new_row.append([row[0]]+[row[n] for n in rand_col])
+
+                generated_table.table_mark=new_row
 
             generated_table.updata_shape()
 
             generated_table.save_json(name + '_decomposed'+str(i))
 
 
-class DBpediaAsTable(Table):
+class DBpediaAsTable(myTable):
 
     def __init__(self,table_dir):
 
@@ -400,7 +409,7 @@ class DBpediaAsTable(Table):
         # the sec column depicts the label corresponding to col 1
         if header_ontology not in ['XMLSchema', 'dbpedia', 'w3']:
 
-            return 'Informal header_ontology, input one of the value in [\'XMLSchema\', \'dbpedia\', \'w3\'] !'
+            raise ValueError('Informal header_ontology, input one of the value in [\'XMLSchema\', \'dbpedia\', \'w3\'] !')
 
         marked_table=MarkedTable(table_save_dir=save_dir)
 
@@ -471,6 +480,10 @@ class DBpediaAsTable(Table):
             marked_table.save_json(self.table_type+'_marked')
 
         return marked_table
+
+
+
+
 
 
 
